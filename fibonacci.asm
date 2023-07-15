@@ -11,16 +11,18 @@ section .data
     maxLength db 1 
     
 section .bss
-    n resb 1 
-    term1 resb 1 
-    term2 resb 1 
-    term3 resb 1 
+    term1 resb 4
+    term2 resb 4 
+    term3 resb 4 
+    n resb 4
 
 section .text
     global _start
 
 _start:
 
+
+    ; Print the prompt 
     mov eax,  4       ; SYS_WRITE 
     mov ebx,  1      ; STDOUT
     mov ecx, msg1 
@@ -36,49 +38,68 @@ _start:
     
     ;take input from user
     mov eax,  3      ; SYS_READ 
-    mov ebx, 0       ; STDIN
+    mov ebx, 0      ; STDIN
     mov ecx, n 
-    mov edx, maxLength
+    mov edx, 4
     int 0x80
 
     ;initialize term1 and term2
-    mov byte [term1], 0x0
-    mov byte [term2], 0x1
+    mov  dword[term1], '0'
+    mov dword [term2], '1'
 
     ;print term1
     mov eax, 4       ; SYS_WRITE 
     mov ebx, 1      ; STDOUT
-    mov ecx, term1 
-    mov edx, 0x1 
+    mov ecx, term1
+    mov edx, 4
     int 0x80
 
-    ;Condition1
-    cmp byte [n], 1
+    mov edi, n
+
+    dec byte[n] 
+    cmp byte[n], '0'
     jle end
 
 
-    mov ecx , n
+   
 
 
 
 loop:
-    ;print nextTerm
+
+
+    ; print nextTerm
     mov eax, 4       ; SYS_WRITE 
     mov ebx, 1      ; STDOUT
     mov ecx, term2 
-    mov edx, 0x1 
+    mov edx, 1 
     int 0x80
 
-    mov byte[term3], term1
-    mov byte[term1], term2
-    add byte[term2], term3  
-    mov byte [term3],0
+    mov eax , [term1]
+    sub eax,'0'
+    mov ebx, [term2]
+    sub ebx,'0'
+    add eax , ebx 
+    add eax, '0'
 
-    dec ecx
-    cmp ecx, 0
-    jne loop
+    mov [term3] , eax
+    mov ebx, [term2]
+    mov [term1] , ebx
+    mov [term2] , eax
+    
+    dec byte[n] 
+    cmp byte[n], '0'
+    jg loop
 
+; 
 end:
+
+    ;print New Line
+     mov eax, 4       ; SYS_WRITE 
+    mov ebx, 1      ; STDOUT
+    mov ecx, 0xA 
+    mov edx,1
+    int 0x80
 
     ;print End STATEMENT
     mov eax, 4       ; SYS_WRITE 
@@ -89,6 +110,7 @@ end:
 
     ;exit
     mov eax,  1      ; SYS_EXIT 
-    mov ebx , 0
+    xor ebx,ebx
     int 0x80 
+    ret
 

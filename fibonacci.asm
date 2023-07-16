@@ -8,12 +8,16 @@ section .data
     bye  db "Bye Bye..." , 0xa
     bye_len equ $-bye
     
+    term1 db '00'
+    term2 db '01'
+    term3 db '00'
     maxLength db 1 
+    newLine db 0xA
+    
+    comma db ' , '
+
     
 section .bss
-    term1 resb 4
-    term2 resb 4 
-    term3 resb 4 
     n resb 4
 
 section .text
@@ -43,15 +47,19 @@ _start:
     mov edx, 4
     int 0x80
 
-    ;initialize term1 and term2
-    mov  dword[term1], '0'
-    mov dword [term2], '1'
 
     ;print term1
     mov eax, 4       ; SYS_WRITE 
     mov ebx, 1      ; STDOUT
     mov ecx, term1
-    mov edx, 4
+    mov edx, 2
+    int 0x80
+
+    ;print comma
+    mov eax, 4      ; SYS_WRITE 
+    mov ebx, 1      ; STDOUT
+    mov ecx, comma
+    mov edx, 3
     int 0x80
 
     mov edi, n
@@ -72,17 +80,39 @@ loop:
     mov eax, 4       ; SYS_WRITE 
     mov ebx, 1      ; STDOUT
     mov ecx, term2 
-    mov edx, 1 
+    mov edx, 2 
+    int 0x80
+    ;print comma
+    mov eax, 4      ; SYS_WRITE 
+    mov ebx, 1      ; STDOUT
+    mov ecx, comma
+    mov edx, 3
     int 0x80
 
-    mov eax , [term1]
-    sub eax,'0'
-    mov ebx, [term2]
-    sub ebx,'0'
-    add eax , ebx 
-    add eax, '0'
+        mov     esi, 1      ;pointing to the rightmost digit
+        mov     ecx, 2       ;num of digits
+        clc
+   
+    add_loop:  
+        mov 	al, [term1 + esi]
+        adc 	al, [term2 + esi]
+        aaa
+        pushf
+        or 	al, 30h
+        popf
+	
+        mov	[term3 + esi], al
+        dec	esi
+        loop	add_loop
+	
+    ; mov eax , [term1]
+    ; sub eax,'0'
+    ; mov ebx, [term2]
+    ; sub ebx,'0'
+    ; add eax , ebx 
+    ; add eax, '0'
 
-    mov [term3] , eax
+    mov eax , [term3]
     mov ebx, [term2]
     mov [term1] , ebx
     mov [term2] , eax
@@ -95,9 +125,9 @@ loop:
 end:
 
     ;print New Line
-     mov eax, 4       ; SYS_WRITE 
+    mov eax, 4       ; SYS_WRITE 
     mov ebx, 1      ; STDOUT
-    mov ecx, 0xA 
+    mov ecx, newLine 
     mov edx,1
     int 0x80
 

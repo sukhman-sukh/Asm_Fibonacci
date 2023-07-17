@@ -8,9 +8,9 @@ section .data
     bye  db "Bye Bye..." , 0xa
     bye_len equ $-bye
     
-    term1 db '00'
-    term2 db '01'
-    term3 db '00'
+    term1 db '000'
+    term2 db '001'
+    term3 db '000'
     maxLength db 1 
     newLine db 0xA
     
@@ -47,12 +47,16 @@ _start:
     mov edx, 4
     int 0x80
 
+    mov edx , n
+    ;convert string to int
+    call atoi
+    mov edi,eax
 
     ;print term1
     mov eax, 4       ; SYS_WRITE 
     mov ebx, 1      ; STDOUT
     mov ecx, term1
-    mov edx, 2
+    mov edx, 3
     int 0x80
 
     ;print comma
@@ -62,10 +66,10 @@ _start:
     mov edx, 3
     int 0x80
 
-    mov edi, n
+    ; mov edi, n
 
-    dec byte[n] 
-    cmp byte[n], '0'
+    sub edi , 0x1
+    cmp edi ,0
     jle end
 
 
@@ -80,7 +84,7 @@ loop:
     mov eax, 4       ; SYS_WRITE 
     mov ebx, 1      ; STDOUT
     mov ecx, term2 
-    mov edx, 2 
+    mov edx, 3 
     int 0x80
     ;print comma
     mov eax, 4      ; SYS_WRITE 
@@ -89,8 +93,8 @@ loop:
     mov edx, 3
     int 0x80
 
-        mov     esi, 1      ;pointing to the rightmost digit
-        mov     ecx, 2       ;num of digits
+        mov     esi, 2      ;pointing to the rightmost digit
+        mov     ecx, 3       ;num of digits
         clc
    
     add_loop:  
@@ -116,12 +120,13 @@ loop:
     mov ebx, [term2]
     mov [term1] , ebx
     mov [term2] , eax
-    
-    dec byte[n] 
-    cmp byte[n], '0'
+
+
+    sub edi , 0x1
+    cmp edi ,0
     jg loop
 
-; 
+
 end:
 
     ;print New Line
@@ -144,3 +149,32 @@ end:
     int 0x80 
     ret
 
+
+atoi:
+    mov eax, 0              ; Set initial total to 0
+    mov esi , 0 
+convert:
+    movzx esi, byte[edx]   ; Get the current character
+    
+    cmp byte[edx+1] ,0
+    je done
+
+    
+    cmp esi, 48             ; Anything less than 0 is invalid
+    jl error
+    
+    cmp esi, 57             ; Anything greater than 9 is invalid
+    jg error
+     
+    sub esi, 48             ; Convert from ASCII to decimal 
+    imul eax, 10            ; Multiply total by 10
+    add eax, esi            ; Add current digit to total
+    
+    inc edx                  ; Get the address of the next character
+    jmp convert
+
+error:
+    mov eax, -1             ; Return -1 on error
+ 
+done:
+    ret                     ; Return total or error code

@@ -120,12 +120,6 @@ loop:
         dec	esi
         loop	add_loop
 	
-    ; mov eax , [term1]
-    ; sub eax,'0'
-    ; mov ebx, [term2]
-    ; sub ebx,'0'
-    ; add eax , ebx 
-    ; add eax, '0'
 
     mov eax , [term3]
     mov ebx, [term2]
